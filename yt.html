@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Viewer Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border: 2px solid #ccc;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        .control-panel {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select, button {
+            padding: 8px;
+            border: 1px solid #999;
+            font-size: 14px;
+        }
+
+        input[type="text"], input[type="number"], input[type="file"] {
+            width: 300px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .stop-btn {
+            background-color: #f44336;
+        }
+
+        .stop-btn:hover {
+            background-color: #da190b;
+        }
+
+        .window-btn {
+            background-color: #2196F3;
+        }
+
+        .window-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        .proxy-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .checkbox-group {
+            margin: 10px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .viewers-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .viewer-card {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .viewer-frame {
+            width: 100%;
+            height: 140px;
+            background-color: #000;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+        }
+
+        .viewer-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .viewer-info {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .viewer-info div {
+            margin-bottom: 3px;
+        }
+
+        .quick-stats {
+            background-color: #e8f4f8;
+            border: 1px solid #b8dce8;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .quick-stats span {
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .viewers-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Window styles for popup windows */
+        .popup-window {
+            position: fixed;
+            top: 50px;
+            left: 50px;
+            width: 600px;
+            height: 500px;
+            background-color: white;
+            border: 2px solid #333;
+            z-index: 1000;
+            resize: both;
+            overflow: auto;
+        }
+
+        .popup-header {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-content {
+            padding: 15px;
+            height: calc(100% - 50px);
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 11px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .proxy-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .proxy-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .proxy-status {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: white;
+        }
+
+        .proxy-online {
+            background-color: #4CAF50;
+        }
+
+        .proxy-offline {
+            background-color: #f44336;
+        }
+
+        .proxy-testing {
+            background-color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Viewer Simulator</h1>
+        
+        <div class="control-panel">
+            <div class="two-column">
+                <div>
+                    <div class="form-group">
+                        <label for="video-url">YouTube Video URL:</label>
+                        <input type="text" id="video-url" placeholder="https://www.youtube.com/watch?v=..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="viewer-count">Number of Viewers:</label>
+                        <input type="number" id="viewer-count" min="1" max="1000" value="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="watch-duration">Watch Duration (minutes):</label>
+                        <input type="number" id="watch-duration" min="1" max="1440" value="30" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="view-increase-rate">View Increase Rate (views/minute):</label>
+                        <input type="number" id="view-increase-rate" min="1" max="1000" value="5" required>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label for="proxy-file">Load Proxy List:</label>
+                        <input type="file" id="proxy-file" accept=".txt,.json">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="refresh-interval">Auto-Refresh Interval (seconds):</label>
+                        <input type="number" id="refresh-interval" min="10" max="3600" value="180">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ip-rotation">IP Rotation Interval (seconds):</label>
+                        <input type="number" id="ip-rotation" min="10" max="3600" value="60" required>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="simulate-engagement"> Simulate User Engagement
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="individual-windows"> Open Individual Windows
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="proxy-info" class="proxy-info" style="display: none;">
+                <strong>Proxy Status:</strong> <span id="proxy-status">No proxies loaded</span>
+            </div>
+            
+            <div class="form-group">
+                <button id="start-btn">Start Simulation</button>
+                <button id="stop-btn" class="stop-btn" disabled>Stop Simulation</button>
+                <button id="reset-stats-btn">Reset Statistics</button>
+                <button id="stats-window-btn" class="window-btn">Statistics Window</button>
+                <button id="proxy-window-btn" class="window-btn">Proxy Test Window</button>
+            </div>
+        </div>
+        
+        <div class="quick-stats">
+            <span>Views: <span id="quick-views">0</span></span>
+            <span>Watch Hours: <span id="quick-hours">0.0</span></span>
+            <span>Active: <span id="quick-active">0</span></span>
+            <span>Status: <span id="quick-status">Idle</span></span>
+        </div>
+        
+        <div id="alert-container"></div>
+        
+        <div id="viewers-container" class="viewers-container">
+            <!-- Viewer cards will be added here -->
+        </div>
+    </div>
+
+    <script>
+class YouTubeViewerSimulator {
+    constructor() {
+        this.state = {
+            isRunning: false,
+            viewers: [],
+            proxies: [],
+            totalViews: 0,
+            watchHours: 0,
+            simulationStartTime: null,
+            simulationTime: 0,
+            viewsPerMinute: 0,
+            lastViewUpdate: Date.now(),
+            intervals: {
+                main: null,
+                viewCounter: null,
+                timer: null,
+                proxyRotation: null,
+                refresh: null
+            },
+            windows: {
+                stats: null,
+                proxy: null,
+                viewers: []
+            }
+        };
+
+        this.elements = {
+            videoUrl: document.getElementById('video-url'),
+            viewerCount: document.getElementById('viewer-count'),
+            watchDuration: document.getElementById('watch-duration'),
+            viewIncreaseRate: document.getElementById('view-increase-rate'),
+            proxyFile: document.getElementById('proxy-file'),
+            refreshInterval: document.getElementById('refresh-interval'),
+            ipRotation: document.getElementById('ip-rotation'),
+            simulateEngagement: document.getElementById('simulate-engagement'),
+            individualWindows: document.getElementById('individual-windows'),
+            startBtn: document.getElementById('start-btn'),
+            stopBtn: document.getElementById('stop-btn'),
+            resetStatsBtn: document.getElementById('reset-stats-btn'),
+            statsWindowBtn: document.getElementById('stats-window-btn'),
+            proxyWindowBtn: document.getElementById('proxy-window-btn'),
+            viewersContainer: document.getElementById('viewers-container'),
+            quickViews: document.getElementById('quick-views'),
+            quickHours: document.getElementById('quick-hours'),
+            quickActive: document.getElementById('quick-active'),
+            quickStatus: document.getElementById('quick-status'),
+            proxyInfo: document.getElementById('proxy-info'),
+            proxyStatus: document.getElementById('proxy-status'),
+            alertContainer: document.getElementById('alert-container')
+        };
+
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        if (!this.loadSettings()) this.loadDefaultProxies();
+        this.setupAutoSave && this.setupAutoSave();
+    }
+
+    setupEventListeners() {
+        this.elements.startBtn.addEventListener('click', () => this.start());
+        this.elements.stopBtn.addEventListener('click', () => this.stop());
+        this.elements.resetStatsBtn.addEventListener('click', () => this.resetStats());
+        this.elements.statsWindowBtn.addEventListener('click', () => this.openStatsWindow());
+        this.elements.proxyWindowBtn.addEventListener('click', () => this.openProxyWindow());
+        this.elements.proxyFile.addEventListener('change', (e) => this.loadProxyFile(e));
+        
+        // Handle page unload to clean up
+        window.addEventListener('beforeunload', () => this.cleanup());
+    }
+
+    loadDefaultProxies() {
+        this.state.proxies = [
+            { ip: '192.168.1.1', port: 8080, type: 'HTTP', status: 'untested' },
+            { ip: '10.0.0.1', port: 3128, type: 'HTTPS', status: 'untested' },
+            { ip: '172.16.0.1', port: 1080, type: 'SOCKS5', status: 'untested' },
+            { ip: '203.0.113.1', port: 8080, type: 'HTTP', status: 'untested' },
+            { ip: '198.51.100.1', port: 3128, type: 'HTTPS', status: 'untested' }
+        ];
+        this.updateProxyStatus();
+    }
+
+    async loadProxyFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            
+            if (file.name.endsWith('.json')) {
+                const data = JSON.parse(text);
+                this.state.proxies = Array.isArray(data) ? data : Object.values(data).flat();
+            } else {
+                this.state.proxies = text.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line && line.includes(':'))
+                    .map(line => {
+                        const [ip, port] = line.split(':');
+                        return { 
+                            ip: ip.trim(), 
+                            port: parseInt(port.trim()), 
+                            type: 'HTTP',
+                            status: 'untested'
+                        };
+                    });
+            }
+
+            this.updateProxyStatus();
+            this.showAlert('Proxy file loaded successfully!', 'success');
+        } catch (error) {
+            this.showAlert('Error loading proxy file: ' + error.message, 'danger');
+        }
+    }
+
+    updateProxyStatus() {
+        const count = this.state.proxies.length;
+        this.elements.proxyStatus.textContent = `${count} proxies loaded`;
+        this.elements.proxyInfo.style.display = count > 0 ? 'block' : 'none';
+    }
+
+    showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        
+        this.elements.alertContainer.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+
+    validateYouTubeUrl(url) {
+        const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+        return pattern.test(url);
+    }
+
+    extractVideoId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    start() {
+        if (this.state.isRunning) return;
+
+        const url = this.elements.videoUrl.value.trim();
+        if (!url || !this.validateYouTubeUrl(url)) {
+            this.showAlert('Please enter a valid YouTube URL', 'danger');
+            return;
+        }
+
+        const videoId = this.extractVideoId(url);
+        if (!videoId) {
+            this.showAlert('Could not extract video ID from URL', 'danger');
+            return;
+        }
+
+        this.state.isRunning = true;
+        this.state.simulationStartTime = Date.now();
+        this.state.lastViewUpdate = Date.now();
+        
+        this.elements.startBtn.disabled = true;
+        this.elements.stopBtn.disabled = false;
+        this.elements.quickStatus.textContent = 'Running';
+        
+        this.createViewers(videoId);
+        this.startIntervals();
+        this.saveSettings(); // Add this line right before the showAlert
+        this.showAlert('Simulation started successfully!', 'success');
+        
+
+    }
+
+    stop() {
+        if (!this.state.isRunning) return;
+
+        this.state.isRunning = false;
+        
+        // Clear all intervals
+        Object.values(this.state.intervals).forEach(interval => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        });
+        
+        // Reset intervals object
+        this.state.intervals = {
+            main: null,
+            viewCounter: null,
+            timer: null,
+            proxyRotation: null,
+            refresh: null
+        };
+        
+        // Clear viewer refresh timers
+        this.state.viewers.forEach(viewer => {
+            if (viewer.refreshTimer) {
+                clearTimeout(viewer.refreshTimer);
+                viewer.refreshTimer = null;
+            }
+        });
+
+        // Close individual viewer windows
+        this.state.windows.viewers.forEach(window => {
+            if (window && !window.closed) {
+                window.close();
+            }
+        });
+        this.state.windows.viewers = [];
+
+        this.elements.startBtn.disabled = false;
+        this.elements.stopBtn.disabled = true;
+        this.elements.quickStatus.textContent = 'Stopped';
+         this.saveSettings(); // Add this line right before the showAlert
+      this.showAlert('Simulation stopped successfully', 'warning');
+        
+    }
+
+    resetStats() {
+        this.state.totalViews = 0;
+        this.state.watchHours = 0;
+        this.state.simulationTime = 0;
+        this.state.viewsPerMinute = 0;
+        
+        this.updateDisplay();
+        this.saveSettings(); // Add this line right before the showAlert
+        this.showAlert('Statistics reset', 'success');
+    }
+
+    saveSettings() {
+        const settings = {
+            videoUrl: this.elements.videoUrl.value,
+            viewerCount: this.elements.viewerCount.value,
+            watchDuration: this.elements.watchDuration.value,
+            viewIncreaseRate: this.elements.viewIncreaseRate.value,
+            refreshInterval: this.elements.refreshInterval.value,
+            ipRotation: this.elements.ipRotation.value,
+            simulateEngagement: this.elements.simulateEngagement.checked,
+            individualWindows: this.elements.individualWindows.checked,
+            proxies: this.state.proxies,
+            stats: {
+                totalViews: this.state.totalViews,
+                watchHours: this.state.watchHours,
+                simulationTime: this.state.simulationTime
+            },
+            isRunning: this.state.isRunning // <-- add this line
+        };
+        localStorage.setItem('youtubeViewerSimulatorSettings', JSON.stringify(settings));
+    }
+
+    loadSettings() {
+        const settings = JSON.parse(localStorage.getItem('youtubeViewerSimulatorSettings') || 'null');
+        if (!settings) return false;
+
+        // Restore form fields
+        this.elements.videoUrl.value = settings.videoUrl || '';
+        this.elements.viewerCount.value = settings.viewerCount || 10;
+        this.elements.watchDuration.value = settings.watchDuration || 30;
+        this.elements.viewIncreaseRate.value = settings.viewIncreaseRate || 5;
+        this.elements.refreshInterval.value = settings.refreshInterval || 180;
+        this.elements.ipRotation.value = settings.ipRotation || 60;
+        this.elements.simulateEngagement.checked = !!settings.simulateEngagement;
+        this.elements.individualWindows.checked = !!settings.individualWindows;
+
+        // Restore proxies
+        if (Array.isArray(settings.proxies)) {
+            this.state.proxies = settings.proxies;
+            this.updateProxyStatus();
+        }
+
+        // Restore stats
+        if (settings.stats) {
+            this.state.totalViews = settings.stats.totalViews || 0;
+            this.state.watchHours = settings.stats.watchHours || 0;
+            this.state.simulationTime = settings.stats.simulationTime || 0;
+        }
+
+        // If simulation was running, auto-start
+        if (settings.isRunning) {
+            setTimeout(() => this.start(), 500); // Delay to ensure DOM is ready
+        }
+
+        this.updateDisplay();
+        return true;
+    }
+
+    updateDisplay() {
+        this.elements.quickViews.textContent = this.state.totalViews.toLocaleString();
+        this.elements.quickHours.textContent = this.state.watchHours.toFixed(1);
+        this.elements.quickActive.textContent = this.state.viewers.length;
+        
+        // Update stats window if open
+        if (this.state.windows.stats && !this.state.windows.stats.closed) {
+            this.updateStatsWindow();
+        }
+        // Update proxy window if open
+        if (this.state.windows.proxy && !this.state.windows.proxy.closed) {
+            this.updateProxyWindow();
+        }
+    }
+
+    createViewers(videoId) {
+        const viewerCount = parseInt(this.elements.viewerCount.value);
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
+        
+        this.elements.viewersContainer.innerHTML = '';
+        this.state.viewers = [];
+
+        for (let i = 0; i < viewerCount; i++) {
+            const viewer = this.createViewer(i, embedUrl);
+            this.state.viewers.push(viewer);
+        }
+        
+        this.elements.quickActive.textContent = viewerCount;
+    }
+
+    createViewer(index, embedUrl) {
+        const proxy = this.getRandomProxy();
+        const viewer = {
+            id: index,
+            proxy: proxy,
+            element: null,
+            iframe: null,
+            refreshTimer: null,
+            watchTime: 0,
+            lastUpdate: Date.now(),
+            engaged: false,
+            window: null
+        };
+
+        // Create viewer card for main window
+        const viewerCard = document.createElement('div');
+        viewerCard.className = 'viewer-card';
+        viewerCard.innerHTML = `
+            <div class="viewer-frame"></div>
+            <div class="viewer-info">
+                <div><strong>Viewer #${index + 1}</strong></div>
+                <div>IP: ${proxy ? proxy.ip : 'Direct'}</div>
+                <div>Proxy: ${proxy ? proxy.type : 'None'}</div>
+                <div>Watch Time: <span class="watch-time">0m</span></div>
+                <div>Status: <span class="viewer-status">Loading</span></div>
+                <div><button onclick="simulator.openViewerWindow(${index})">Open Window</button></div>
+            </div>
+        `;
+
+        const iframe = document.createElement('iframe');
+        iframe.src = embedUrl;
+        iframe.allow = 'autoplay';
+        iframe.setAttribute('allowfullscreen', '');
+        
+        setTimeout(() => {
+            const statusSpan = viewerCard.querySelector('.viewer-status');
+            if (statusSpan) statusSpan.textContent = 'Watching';
+        }, Math.random() * 3000 + 1000);
+
+        viewerCard.querySelector('.viewer-frame').appendChild(iframe);
+        this.elements.viewersContainer.appendChild(viewerCard);
+
+        viewer.element = viewerCard;
+        viewer.iframe = iframe;
+
+        // Open individual window if option is selected
+        if (this.elements.individualWindows.checked) {
+            this.openViewerWindow(index);
+        }
+
+        this.setupViewerRefresh(viewer, embedUrl);
+        return viewer;
+    }
+
+    openViewerWindow(index) {
+        const viewer = this.state.viewers[index];
+        if (!viewer || (viewer.window && !viewer.window.closed)) return;
+
+        const proxy = viewer.proxy;
+        const windowContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Viewer #${index + 1}</title>
+                <style>
+                    body { margin: 0; padding: 10px; font-family: Arial, sans-serif; }
+                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 10px; }
+                    .video-container { width: 100%; height: 300px; }
+                    iframe { width: 100%; height: 100%; border: none; }
+                </style>
+            </head>
+            <body>
+                <div class="info">
+                    <strong>Viewer #${index + 1}</strong><br>
+                    IP: ${proxy ? proxy.ip : 'Direct'}<br>
+                    Proxy: ${proxy ? proxy.type : 'None'}<br>
+                    Watch Time: <span id="watch-time">0m</span><br>
+                    Status: <span id="status">Loading</span>
+                </div>
+                <div class="video-container">
+                    <iframe src="${viewer.iframe.src}" allow="autoplay" allowfullscreen></iframe>
+                </div>
+            </body>
+            </html>
+        `;
+
+        const newWindow = window.open('', `viewer_${index}`, 'width=480,height=400,scrollbars=yes,resizable=yes');
+        newWindow.document.write(windowContent);
+        newWindow.document.close();
+        
+        viewer.window = newWindow;
+        this.state.windows.viewers[index] = newWindow;
+
+        // Set up auto-refresh for individual window
+        this.setupWindowRefresh(viewer, newWindow);
+    }
+
+    setupViewerRefresh(viewer, embedUrl) {
+        const refreshSeconds = parseInt(this.elements.refreshInterval.value);
+        if (refreshSeconds > 0) {
+            const refreshMs = refreshSeconds * 1000;
+            viewer.refreshTimer = setTimeout(() => {
+                if (this.state.isRunning) {
+                    const newUrl = embedUrl + '&t=' + Date.now();
+                    viewer.iframe.src = newUrl;
+                    
+                    // Refresh individual window if open
+                    if (viewer.window && !viewer.window.closed) {
+                        const iframe = viewer.window.document.querySelector('iframe');
+                        if (iframe) iframe.src = newUrl;
+                    }
+                    
+                    this.setupViewerRefresh(viewer, embedUrl);
+                }
+            }, refreshMs);
+        }
+    }
+
+    setupWindowRefresh(viewer, window) {
+        const refreshSeconds = parseInt(this.elements.refreshInterval.value);
+        if (refreshSeconds > 0) {
+            const refreshMs = refreshSeconds * 1000;
+            setTimeout(() => {
+                if (this.state.isRunning && window && !window.closed) {
+                    const iframe = window.document.querySelector('iframe');
+                    if (iframe) {
+                        iframe.src = iframe.src + '&refresh=' + Date.now();
+                    }
+                    this.setupWindowRefresh(viewer, window);
+                }
+            }, refreshMs);
+        }
+    }
+
+    getRandomProxy() {
+        if (this.state.proxies.length === 0) return null;
+        return this.state.proxies[Math.floor(Math.random() * this.state.proxies.length)];
+    }
+
+    startIntervals() {
+        // Main update interval
+        this.state.intervals.main = setInterval(() => {
+            this.updateViewers();
+            this.updateDisplay();
+        }, 1000);
+
+        // View counter interval
+        const viewRate = parseInt(this.elements.viewIncreaseRate.value);
+        this.state.intervals.viewCounter = setInterval(() => {
+            this.updateViewCount();
+        }, 60000 / viewRate);
+
+        // Timer interval
+        this.state.intervals.timer = setInterval(() => {
+            this.updateTimer();
+        }, 1000);
+
+        // Proxy rotation interval
+        const rotationSeconds = parseInt(this.elements.ipRotation.value);
+        this.state.intervals.proxyRotation = setInterval(() => {
+            this.rotateProxies();
+        }, rotationSeconds * 1000);
+
+        // Auto-refresh interval
+        const refreshSeconds = parseInt(this.elements.refreshInterval.value);
+        if (refreshSeconds > 0) {
+            this.state.intervals.refresh = setInterval(() => {
+                this.refreshAllViewers();
+            }, refreshSeconds * 1000);
+        }
+    }
+
+    updateViewers() {
+        this.state.viewers.forEach((viewer, index) => {
+            const now = Date.now();
+            const elapsed = (now - viewer.lastUpdate) / 1000 / 60; // minutes
+            viewer.watchTime += elapsed;
+            viewer.lastUpdate = now;
+
+            // Update main window display
+            const watchTimeSpan = viewer.element.querySelector('.watch-time');
+            if (watchTimeSpan) {
+                watchTimeSpan.textContent = `${Math.floor(viewer.watchTime)}m`;
+            }
+
+            // Update individual window display
+            if (viewer.window && !viewer.window.closed) {
+                const watchTimeSpan = viewer.window.document.getElementById('watch-time');
+                if (watchTimeSpan) {
+                    watchTimeSpan.textContent = `${Math.floor(viewer.watchTime)}m`;
+                }
+            }
+
+            // Simulate engagement
+            if (this.elements.simulateEngagement.checked) {
+                viewer.engaged = Math.random() < 0.7;
+                const statusSpan = viewer.element.querySelector('.viewer-status');
+                if (statusSpan) {
+                    statusSpan.textContent = viewer.engaged ? 'Engaged' : 'Idle';
+                }
+                
+                // Update individual window status
+                if (viewer.window && !viewer.window.closed) {
+                    const statusSpan = viewer.window.document.getElementById('status');
+                    if (statusSpan) {
+                        statusSpan.textContent = viewer.engaged ? 'Engaged' : 'Idle';
+                    }
+                }
+            }
+        });
+
+        this.state.watchHours = this.state.viewers.reduce((total, viewer) => {
+            return total + (viewer.watchTime / 60);
+        }, 0);
+    }
+
+    updateViewCount() {
+        if (!this.state.isRunning) return;
+        
+        const rate = parseInt(this.elements.viewIncreaseRate.value);
+        this.state.totalViews += rate;
+        
+        const now = Date.now();
+        const elapsed = (now - this.state.lastViewUpdate) / 60000;
+        this.state.viewsPerMinute = Math.round(rate / elapsed);
+        this.state.lastViewUpdate = now;
+    }
+
+    updateTimer() {
+        if (!this.state.isRunning) return;
+        this.state.simulationTime = Math.floor((Date.now() - this.state.simulationStartTime) / 1000);
+    }
+
+    rotateProxies() {
+        if (!this.state.isRunning || this.state.proxies.length === 0) return;
+        
+        this.state.viewers.forEach(viewer => {
+            const newProxy = this.getRandomProxy();
+            viewer.proxy = newProxy;
+            
+            const ipDiv = viewer.element.querySelector('.viewer-info div:nth-child(2)');
+            const proxyDiv = viewer.element.querySelector('.viewer-info div:nth-child(3)');
+            
+            if (ipDiv) ipDiv.textContent = `IP: ${newProxy ? newProxy.ip : 'Direct'}`;
+            if (proxyDiv) proxyDiv.textContent = `Proxy: ${newProxy ? newProxy.type : 'None'}`;
+        });
+    }
+
+    refreshAllViewers() {
+        if (!this.state.isRunning) return;
+        
+        this.state.viewers.forEach(viewer => {
+            if (viewer.iframe) {
+                viewer.iframe.src = viewer.iframe.src + '&refresh=' + Date.now();
+            }
+            
+            if (viewer.window && !viewer.window.closed) {
+                const iframe = viewer.window.document.querySelector('iframe');
+                if (iframe) {
+                    iframe.src = iframe.src + '&refresh=' + Date.now();
+                }
+            }
+        });
+    }
+
+    openStatsWindow() {
+        if (this.state.windows.stats && !this.state.windows.stats.closed) {
+            this.state.windows.stats.focus();
+            return;
+        }
+
+        const windowContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Simulation Statistics</title>
+                <style>
+                    body { margin: 0; padding: 10px; font-family: Arial, sans-serif; }
+                    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+                    .stat-box { background: #f0f0f0; padding: 10px; text-align: center; border: 1px solid #ddd; }
+                    .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; }
+                    .stat-value { font-size: 24px; font-weight: bold; }
+                    .chart-container { width: 100%; height: 200px; background: #f9f9f9; border: 1px solid #ddd; margin-top: 20px; }
+                    .time-display { text-align: center; margin: 10px 0; font-size: 14px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <h2>Simulation Statistics</h2>
+                <div class="time-display" id="simulation-time">Running time: 0s</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Views</div>
+                        <div class="stat-value" id="stats-views">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Watch Hours</div>
+                        <div class="stat-value" id="stats-hours">0.0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Active Viewers</div>
+                        <div class="stat-value" id="stats-active">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Views/Min</div>
+                        <div class="stat-value" id="stats-rate">0</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container" id="views-chart">
+                    <!-- Chart would be implemented here -->
+                    <p style="text-align: center; padding-top: 80px;">Views over time chart</p>
+                </div>
+            </body>
+            </html>
+        `;
+
+        const newWindow = window.open('', 'stats_window', 'width=600,height=400,scrollbars=yes,resizable=yes');
+        newWindow.document.write(windowContent);
+        newWindow.document.close();
+        
+        this.state.windows.stats = newWindow;
+        this.updateStatsWindow();
+    }
+
+    updateStatsWindow() {
+        if (!this.state.windows.stats || this.state.windows.stats.closed) return;
+        
+        const doc = this.state.windows.stats.document;
+        doc.getElementById('stats-views').textContent = this.state.totalViews.toLocaleString();
+        doc.getElementById('stats-hours').textContent = this.state.watchHours.toFixed(1);
+        doc.getElementById('stats-active').textContent = this.state.viewers.length;
+        doc.getElementById('stats-rate').textContent = this.state.viewsPerMinute;
+        
+        const timeStr = `Running time: ${Math.floor(this.state.simulationTime / 60)}m ${this.state.simulationTime % 60}s`;
+        doc.getElementById('simulation-time').textContent = timeStr;
+    }
+
+    openProxyWindow() {
+        if (this.state.windows.proxy && !this.state.windows.proxy.closed) {
+            this.state.windows.proxy.focus();
+            return;
+        }
+
+        const windowContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Proxy Status</title>
+                <style>
+                    body { margin: 0; padding: 10px; font-family: Arial, sans-serif; }
+                    .proxy-list { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; margin-top: 10px; }
+                    .proxy-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
+                    .proxy-status { padding: 3px 8px; border-radius: 3px; font-size: 12px; color: white; }
+                    .proxy-online { background: #4CAF50; }
+                    .proxy-offline { background: #f44336; }
+                    .proxy-testing { background: #FF9800; }
+                    .proxy-untested { background: #9E9E9E; }
+                    .controls { margin-bottom: 10px; }
+                </style>
+            </head>
+            <body>
+                <h2>Proxy Status</h2>
+                <div class="controls">
+                    <button id="test-all-btn">Test All Proxies</button>
+                    <span id="proxy-count">${this.state.proxies.length} proxies loaded</span>
+                </div>
+                <div class="proxy-list" id="proxy-list">
+                    ${this.generateProxyListHTML()}
+                </div>
+            </body>
+            </html>
+        `;
+
+        const newWindow = window.open('', 'proxy_window', 'width=500,height=500,scrollbars=yes,resizable=yes');
+        newWindow.document.write(windowContent);
+        newWindow.document.close();
+        
+        // Add event listener for test button
+        newWindow.document.getElementById('test-all-btn').addEventListener('click', () => {
+            this.testAllProxies();
+        });
+        
+        this.state.windows.proxy = newWindow;
+    }
+
+    generateProxyListHTML() {
+        return this.state.proxies.map(proxy => `
+            <div class="proxy-item">
+                <div>${proxy.ip}:${proxy.port} (${proxy.type})</div>
+                <div class="proxy-status proxy-${proxy.status}">${proxy.status}</div>
+            </div>
+        `).join('');
+    }
+
+    updateProxyWindow() {
+        if (!this.state.windows.proxy || this.state.windows.proxy.closed) return;
+        
+        const doc = this.state.windows.proxy.document;
+        doc.getElementById('proxy-list').innerHTML = this.generateProxyListHTML();
+        doc.getElementById('proxy-count').textContent = `${this.state.proxies.length} proxies loaded`;
+    }
+
+    async testAllProxies() {
+        if (!this.state.windows.proxy || this.state.windows.proxy.closed) return;
+        
+        const doc = this.state.windows.proxy.document;
+        const testBtn = doc.getElementById('test-all-btn');
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing...';
+        
+        // Simulate proxy testing (in a real app, this would make actual network requests)
+        for (const proxy of this.state.proxies) {
+            proxy.status = 'testing';
+            this.updateProxyWindow();
+            
+            // Simulate test delay
+            await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+            
+            // Randomly set status (in a real app, this would be based on actual test results)
+            proxy.status = Math.random() > 0.3 ? 'online' : 'offline';
+            this.updateProxyWindow();
+        }
+        
+        testBtn.disabled = false;
+        testBtn.textContent = 'Test All Proxies';
+        this.showAlert('Proxy testing completed', 'success');
+    }
+
+    cleanup() {
+        this.stop();
+        
+        // Close any open windows
+        if (this.state.windows.stats && !this.state.windows.stats.closed) {
+            this.state.windows.stats.close();
+        }
+        if (this.state.windows.proxy && !this.state.windows.proxy.closed) {
+            this.state.windows.proxy.close();
+        }
+        this.state.windows.viewers.forEach(window => {
+            if (window && !window.closed) {
+                window.close();
+            }
+        });
+    }
+}
+
+// Initialize the simulator when the page loads
+window.addEventListener('DOMContentLoaded', () => {
+    window.simulator = new YouTubeViewerSimulator();
+});
+    </script>
+</body>
+</html>
